@@ -1,0 +1,6 @@
+name = Special Topic
+description = Create special topic to archive nodes.
+package = "Panels"
+dependencies[] = panels
+core = 7.x
+files[] = special_topic.module

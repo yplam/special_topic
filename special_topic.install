@@ -1,0 +1,57 @@
+<?php
+
+/**
+ * Implements hook_field_schema().
+ */
+function special_topic_field_schema($field) {
+  $columns = array(
+    'special_id' => array(
+      'description' => 'The id of the target topic entity.',
+      'type' => 'int',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+    ),
+    'special_position' => array(
+	  'description' => 'The position of this node.',
+	  'type' => 'varchar', 
+	  'length' => 16, 
+	  'not null' => FALSE
+	),
+  );
+  $indexes = array(
+    'special_id_position' => array('special_id', 'special_position'),
+  );
+  return array(
+    'columns' => $columns,
+    'indexes' => $indexes,
+  );
+}
+
+
+function special_topic_schema() {
+  $schema = array();
+
+  $schema['special_topic'] = array(
+    'fields' => array(
+      'nid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'did' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+      ),
+	  'css_id' => array(
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+      'pipeline' => array(
+        'type' => 'varchar',
+        'length' => '255',
+      ),
+    ),
+    'primary key' => array('did'),
+  );
+  return $schema;
+}
