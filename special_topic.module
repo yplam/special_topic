@@ -80,6 +80,27 @@ function special_topic_menu() {
   return $items;
 }
 
+function special_topic_theme($existing, $type, $theme, $path) {
+  return array(
+    'special_topic_list' => array(
+
+	),
+  );
+}
+
+function theme_special_topic_list($nodes){
+  $links = array();
+  foreach($nodes as $node){
+    if(empty($node)){
+	  continue;
+	}
+    $links[] = array(
+	  'title' => $node->title,
+	  'href' => 'node/'.$node->nid,
+	);
+  }
+  return theme('links', array('links'=>$links));
+}
 
 /**
  * Access callback to determine if a user has edit access
@@ -117,6 +138,12 @@ function special_topic_node_access($node, $op, $account) {
 
   if ($op == 'delete' && (user_access('delete any special-topic') || $node->uid == $account->uid && user_access('delete own special-topic'))) {
     return NODE_ACCESS_ALLOW;
+  }
+}
+
+function special_topic_ctools_plugin_directory($module, $plugin) {
+  if($module == 'ctools'){
+    return 'plugins/' . $plugin;
   }
 }
 
@@ -170,11 +197,19 @@ function special_topic_field_formatter_view($entity_type, $entity, $field, $inst
   switch ($display['type']) {
     case 'special_topic_simple_link':
       foreach ($items as $delta => $item) {
-        $element[$delta] = array(
-          '#type' => 'html_tag',
-          '#tag' => 'p',
-          '#value' => t('The color code in this field is'),
-        );
+	    if($item['special_id'] && $node=node_load($item['special_id'])){
+		  $element[$delta] = array(
+            '#theme' => 'link',
+            '#text' => $node->title,
+            '#path' => 'node/'.$node->nid,
+			'#options' => array(
+              'attributes' => array(),
+              //REQUIRED:
+              'html' => FALSE,
+            ),
+          );
+		}
+        
       }
       break;
   }
@@ -295,7 +330,7 @@ function special_topic_hook_form(&$node, &$form_state) {
     '#default_value' => $node->title,
   );
 
-  $form['panels_node']['css_id'] = array(
+  $form['special_topic']['css_id'] = array(
     '#type' => 'textfield',
     '#title' => t('CSS ID'),
     '#size' => 30,

@@ -55,3 +55,11 @@ function special_topic_schema() {
   );
   return $schema;
 }
+
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function special_topic_uninstall() {
+  db_query("DELETE FROM {node} WHERE type = 'special_topic'");
+}
