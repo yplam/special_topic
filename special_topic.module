@@ -80,28 +80,6 @@ function special_topic_menu() {
   return $items;
 }
 
-function special_topic_theme($existing, $type, $theme, $path) {
-  return array(
-    'special_topic_list' => array(
-
-	),
-  );
-}
-
-function theme_special_topic_list($nodes){
-  $links = array();
-  foreach($nodes as $node){
-    if(empty($node)){
-	  continue;
-	}
-    $links[] = array(
-	  'title' => $node->title,
-	  'href' => 'node/'.$node->nid,
-	);
-  }
-  return theme('links', array('links'=>$links));
-}
-
 /**
  * Access callback to determine if a user has edit access
  */
