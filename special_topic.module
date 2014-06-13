@@ -142,9 +142,24 @@ function special_topic_node_access($node, $op, $account) {
 }
 
 function special_topic_ctools_plugin_directory($module, $plugin) {
-  if($module == 'ctools'){
+  if($module == 'ctools' || $module == 'special_topic'){
     return 'plugins/' . $plugin;
   }
+}
+
+/**
+ * Implements hook_ctools_plugin_type() to inform CTools about the topic render plugin.
+ */
+function special_topic_ctools_plugin_type() {
+  $plugins['topic_render'] = array(
+
+  );
+  return $plugins;
+}
+
+function special_topic_get_render_types() {
+  ctools_include('plugins');
+  return ctools_get_plugins('special_topic', 'topic_render');
 }
 
 
