@@ -12,7 +12,7 @@ function special_topic_field_schema($field) {
       'not null' => TRUE,
     ),
     'special_position' => array(
-	  'description' => 'The position of this node.',
+	  'description' => 'The position of that node.',
 	  'type' => 'varchar', 
 	  'length' => 16, 
 	  'not null' => FALSE
@@ -27,7 +27,9 @@ function special_topic_field_schema($field) {
   );
 }
 
-
+/**
+ * Implements hook_schema().
+ */
 function special_topic_schema() {
   $schema = array();
 
@@ -41,14 +43,17 @@ function special_topic_schema() {
       'did' => array(
         'type' => 'int',
         'not null' => TRUE,
+		'description' => 'Panel display id',
       ),
 	  'css_id' => array(
         'type' => 'varchar',
         'length' => '255',
+		'description' => 'CSS ID add to this node page'
       ),
       'pipeline' => array(
         'type' => 'varchar',
         'length' => '255',
+		'Panel pipeline',
       ),
     ),
     'primary key' => array('did'),

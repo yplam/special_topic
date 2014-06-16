@@ -119,6 +119,9 @@ function special_topic_node_access($node, $op, $account) {
   }
 }
 
+/**
+ * Implementation of hook_ctools_plugin_directory
+ */
 function special_topic_ctools_plugin_directory($module, $plugin) {
   if($module == 'ctools' || $module == 'special_topic'){
     return 'plugins/' . $plugin;
@@ -279,7 +282,7 @@ function special_topic_node_info() {
   
   return array(
     'special_topic' => array(
-      'name' => t('Special Topic Node Type'),
+      'name' => t('Special Topic'),
       'base' => 'special_topic_hook',
       'description' => t('Provide special topic to archive nodes.'),
       'title_label' => t('Special Topic Title'),
@@ -327,7 +330,7 @@ function special_topic_hook_form(&$node, &$form_state) {
     '#type' => 'textfield',
     '#title' => t('CSS ID'),
     '#size' => 30,
-    '#description' => t('An ID that can be used by CSS to style the panel.'),
+    '#description' => t('An ID that can be used by CSS to style the special topic.'),
     '#default_value' => empty($node->special_topic['css_id']) ? '' : $node->special_topic['css_id'],
   );
 
@@ -496,7 +499,7 @@ function special_topic_edit_content($node) {
 function special_topic_get_context(&$node) {
   ctools_include('context');
   $context = ctools_context_create('node', $node);
-  $context->identifier = t('This node');
+  $context->identifier = t('This Special Topic');
   $context->keyword = 'node';
   return array('special-topic' => $context);
 }
