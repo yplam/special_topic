@@ -16,6 +16,7 @@ $plugin = array(
     'node_type' => '',
     'is_promoted' => 0,
 	'count' => 0,
+	'offset' => 0,
 	'field_name' => 'field_special_topic',
     'special_position' => '',
 	'theme_name' => 'special_topic_list',
@@ -45,13 +46,22 @@ function special_topic_nodes_list_content_type_render($subtype, $conf, $panel_ar
   $conf['is_promoted'] && $query->propertyCondition('promoted', 1);
   $conf['special_position'] && $query->fieldCondition($conf['field_name'], 'special_position', $conf['special_position'], '=');
   $conf['is_promoted'] && $query->propertyCondition('promoted', 1);
-  $conf['count'] && $query->range(0, (int)$conf['count']);
-        
+  
+  $offset = empty($conf['offset']) ? NULL : (int)$conf['offset'];
+  $count = empty($conf['count']) ? NULL : (int)$conf['count'];
+  // use range only when $count > 0
+  $count && $query->range($offset, $count);
+
   $result = $query->execute();
   
   if(empty($result['node'])){
     return FALSE;
   }
+  // if $count == 0 && $offset > 0, array_slice
+  if($count==0 && $offset>0 ){
+	$result['node'] = array_slice($result['node'], $offset);
+  }
+  
   $nodes = array();
   foreach($result['node'] as $val){
 	$nodes[] = node_load($val->nid);
@@ -99,7 +109,15 @@ function special_topic_nodes_list_content_type_edit_form($form, &$form_state) {
   $form['count'] = array(
     '#title' => t('Limit node count, 0 for no limit'),
     '#type' => 'textfield',
+	'#size' => 4,
     '#default_value' => $conf['count'],
+	'#required' => TRUE,
+  );
+  $form['offset'] = array(
+    '#title' => t('Query offset'),
+    '#type' => 'textfield',
+	'#size' => 4,
+    '#default_value' => $conf['offset'],
 	'#required' => TRUE,
   );
   
