@@ -13,6 +13,7 @@ $plugin = array(
   
   'category' => t('Special Topic'),
   'defaults' => array(
+    'topic_id' => 0,
     'node_type' => '',
     'is_promoted' => 0,
 	'count' => 0,
@@ -34,6 +35,10 @@ function special_topic_nodes_list_content_type_render($subtype, $conf, $panel_ar
 
   // Get a shortcut to the node.
   $node = $context->data;
+  $nid = $node->nid;
+  if(!empty($conf['topic_id'])){
+    $nid = (int)$conf['topic_id'];
+  }
   // test if this node type and field_name
   if(!field_info_instance('node', $conf['field_name'], $conf['node_type'])){
 	return FALSE;
@@ -41,7 +46,7 @@ function special_topic_nodes_list_content_type_render($subtype, $conf, $panel_ar
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', $conf['node_type'])
-    ->fieldCondition($conf['field_name'], 'special_id', $node->nid, '=')
+    ->fieldCondition($conf['field_name'], 'special_id', $nid, '=')
 	->propertyCondition('status', 1);
   $conf['is_promoted'] && $query->propertyCondition('promoted', 1);
   $conf['special_position'] && $query->fieldCondition($conf['field_name'], 'special_position', $conf['special_position'], '=');
@@ -77,7 +82,7 @@ function special_topic_nodes_list_content_type_render($subtype, $conf, $panel_ar
   $block->module  = 'special_topic';
   $block->title   = 'Nodes List';
   $block->content = $content;
-  $block->delta   = $node->nid;
+  $block->delta   = $nid;
 
   return $block;
 }
@@ -87,6 +92,29 @@ function special_topic_nodes_list_content_type_render($subtype, $conf, $panel_ar
  */
 function special_topic_nodes_list_content_type_edit_form($form, &$form_state) {
   $conf = $form_state['conf'];
+  
+  $options = array();
+  $options[0] = t('This Special Topic');
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'special_topic')
+    ->propertyCondition('status', 1);
+  $result = $query->execute();
+  
+  if(!empty($result['node'])){
+	$nids = array_keys($result['node']);
+	$nodes = entity_load('node', $nids);
+    foreach($nodes as $item){
+      $options[$item->nid] = $item->title;
+    }
+  }
+  $form['topic_id'] = array(
+    '#title' => t('Choose Special Topic'),
+    '#type' => 'select',
+    '#default_value' => $conf['topic_id'],
+	'#options' => $options,
+	'#required' => TRUE,
+  );
   
   // get all node type
   $node_types = node_type_get_types();
