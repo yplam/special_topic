@@ -76,6 +76,12 @@ function special_topic_menu() {
     'page callback' => 'special_topic_add',
     'type' => MENU_CALLBACK,
   );
+  
+  $items['specialtopic/ajax/nodeslist'] = array(
+    'title' => 'Choose Topic Position',
+    'access callback' => TRUE,
+    'page callback' => 'special_topic_ajax_nodes_list',
+  );
 
   return $items;
 }
@@ -230,18 +236,18 @@ function special_topic_field_widget_info() {
  */
 function special_topic_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   $special_id = isset($items[$delta]['special_id']) ? $items[$delta]['special_id'] : 0;
+  if(!empty($form_state['triggering_element']['#parents'])){
+    $parents = $form_state['triggering_element']['#parents'];
+	$special_id = $form_state['values'][$parents[0]][$parents[1]][$parents[2]][$parents[3]];
+  }
+
   $special_position = isset($items[$delta]['special_position']) ? $items[$delta]['special_position'] : '';
   $options = array();
   $options[0] = t('None');
-
-  $query = new EntityFieldQuery();
-  $query->entityCondition('entity_type', 'node')
-    ->entityCondition('bundle', 'special_topic')
-    ->propertyCondition('status', 1);
-  $result = $query->execute();
+  $topics = special_topic_get_active($special_id);
   
-  if(!empty($result['node'])){
-	$nids = array_keys($result['node']);
+  if(!empty($topics)){
+	$nids = array_keys($topics);
 	$nodes = entity_load('node', $nids);
     foreach($nodes as $item){
       $options[$item->nid] = $item->title;
@@ -256,15 +262,27 @@ function special_topic_field_widget_form(&$form, &$form_state, $field, $instance
 	'#options' => $options,
 	'#default_value' => $special_id,
     '#description' => t('Select the special topic'),
+	'#ajax' => array(
+      'callback' => 'special_topic_field_widget_form_replace',
+      'wrapper' => 'special-position-replace',
+    ),
   );
+  $special_position_options = empty($form_state['values']['special_id']) ? special_topic_get_positions($special_id) : special_topic_get_positions($form_state['values']['special_id']);
   $element['special_position'] = array(
-	'#type' => 'textfield',
+	'#type' => 'select',
 	'#title' => t('Special topic position'),
 	'#description' => t('Enter the position you want to place you node on the special topic'),
-	'#default_value' => $special_position,
-	'#size' => 16,
+	'#default_value' => '',
+	'#options' => $special_position_options,
+	'#prefix' => '<div id="special-position-replace">',
+    '#suffix' => '</div>',
   );
   return $element;
+}
+
+function special_topic_field_widget_form_replace($form, $form_state) {
+  $parents = $form_state['triggering_element']['#parents'];
+  return $form[$parents[0]][$parents[1]][$parents[2]]['special_position'];
 }
 
 /***************************************************************
@@ -342,12 +360,18 @@ function special_topic_hook_form(&$node, &$form_state) {
   foreach ($pipelines as $name => $pipeline) {
     $options[$name] = check_plain($pipeline->admin_title) . '<div class="description">' . check_plain($pipeline->admin_description) . '</div>';
   }
-
   $form['special_topic']['pipeline'] = array(
     '#type' => 'radios',
     '#options' => $options,
     '#title' => t('Renderer'),
     '#default_value' => isset($node->special_topic['pipeline']) ? $node->special_topic['pipeline'] : 'standard',
+  );
+  
+  $form['special_topic']['positions'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Positions to place topic content'),
+	'#description' => t('One line each position'),
+	'#default_value' => empty($node->special_topic['positions']) ? '' : $node->special_topic['positions'],
   );
 
   return $form;
@@ -405,6 +429,7 @@ function special_topic_hook_insert(&$node) {
       'did' => $display->did,
 	  'css_id' => $node->special_topic['css_id'],
       'pipeline' => $node->special_topic['pipeline'],
+	  'positions' => $node->special_topic['positions'],
     ))
     ->execute();
 }
@@ -428,6 +453,7 @@ function special_topic_hook_update($node) {
     ->fields(array(
 	  'css_id' => $node->special_topic['css_id'],
       'pipeline' => $node->special_topic['pipeline'],
+	  'positions' => $node->special_topic['positions'],
     ))
     ->execute();
 }
@@ -502,4 +528,47 @@ function special_topic_get_context(&$node) {
   $context->identifier = t('This Special Topic');
   $context->keyword = 'node';
   return array('special-topic' => $context);
+}
+
+function special_topic_get_positions($nid){
+  $node = node_load($nid);
+  $data = array();
+  if(empty($node->special_topic['positions'])){
+    return $data;
+  }
+  $links = explode("\n", $node->special_topic['positions']);
+  $curline = 1;
+  foreach($links as $val){
+    $val = trim($val);
+	$data[$val] = $val;
+  }
+  return $data;
+}
+
+/**
+ * the option string of a special topic position field
+ * return ajax content
+ */
+function special_topic_ajax_nodes_list(){
+  $data = special_topic_get_positions((int)$_POST['topic_id']);
+  $options .= '<option value="">All</option>';
+  foreach ($data as $key => $value) {
+    $options .= '<option value="' . check_plain($key) . '">' . filter_xss_admin($value) . '</option>';
+  }
+  $commands[] = ajax_command_invoke('#edit-special-position', 'html', array($options));
+  print ajax_render($commands);
+  exit();
+}
+
+/**
+ * Get the nids of all active special topics
+ * todo: add filter options
+ */
+function special_topic_get_active(){
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'special_topic')
+    ->propertyCondition('status', 1);
+  $result = $query->execute();
+  return $result['node'];
 }

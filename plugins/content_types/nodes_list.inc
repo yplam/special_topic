@@ -3,14 +3,14 @@
 /**
  * Plugins are described by creating a $plugin array which will be used
  * by the system that includes this file.
+ * We will not require context for this plugin, so this content can place on any panel page
+ * But user need to choose Special Topic 
  */
 $plugin = array(
   'single' => TRUE,
   'title' => t('Special Topic Nodes List'),
   'icon' => 'icon_node.png',
-  'description' => t('The list of the choose nodes.'),
-  'required context' => new ctools_context_required(t('Node'), 'node'),
-  
+  'description' => t('Select nodes from a Special Topic.'),
   'category' => t('Special Topic'),
   'defaults' => array(
     'topic_id' => 0,
@@ -29,20 +29,13 @@ $plugin = array(
  * Select node list and render with a theme.
  */
 function special_topic_nodes_list_content_type_render($subtype, $conf, $panel_args, $context) {
-  if (empty($context) || empty($context->data)) {
-    return;
-  }
 
-  // Get a shortcut to the node.
-  $node = $context->data;
-  $nid = $node->nid;
-  if(!empty($conf['topic_id'])){
-    $nid = (int)$conf['topic_id'];
-  }
-  // test if this node type and field_name
+  $nid = (int)$conf['topic_id'];
+  // test if this node type has a topic field field_name
   if(!field_info_instance('node', $conf['field_name'], $conf['node_type'])){
 	return FALSE;
   }
+  
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', $conf['node_type'])
@@ -92,20 +85,16 @@ function special_topic_nodes_list_content_type_render($subtype, $conf, $panel_ar
  */
 function special_topic_nodes_list_content_type_edit_form($form, &$form_state) {
   $conf = $form_state['conf'];
-  
   $options = array();
-  $options[0] = t('This Special Topic');
-  $query = new EntityFieldQuery();
-  $query->entityCondition('entity_type', 'node')
-    ->entityCondition('bundle', 'special_topic')
-    ->propertyCondition('status', 1);
-  $result = $query->execute();
-  
-  if(!empty($result['node'])){
-	$nids = array_keys($result['node']);
+  // choose active topic
+  $nodes = special_topic_get_active(); 
+  $default_topic_id = $conf['topic_id'];
+  if(!empty($nodes)){
+	$nids = array_keys($nodes);
 	$nodes = entity_load('node', $nids);
     foreach($nodes as $item){
       $options[$item->nid] = $item->title;
+	  empty($default_topic_id) && $default_topic_id = $item->nid;
     }
   }
   $form['topic_id'] = array(
@@ -114,6 +103,10 @@ function special_topic_nodes_list_content_type_edit_form($form, &$form_state) {
     '#default_value' => $conf['topic_id'],
 	'#options' => $options,
 	'#required' => TRUE,
+	'#ajax' => array(
+      'path' => 'specialtopic/ajax/nodeslist',
+      'wrapper' => 'special-position-replace',
+    ),
   );
   
   // get all node type
@@ -180,8 +173,10 @@ function special_topic_nodes_list_content_type_edit_form($form, &$form_state) {
   $form['special_position'] = array(
     '#title' => t('The name of this position to filter nodes'),
 	'#description' => t('If left empty, this will load all nodes of this special topic'),
-    '#type' => 'textfield',
+    '#type' => 'select',
     '#default_value' => $conf['special_position'],
+	'#options' => array(''=>'All') + special_topic_get_positions($default_topic_id),
+	'#validated' => TRUE
   );
   $form['extra'] = array(
     '#title' => t('Extra string pass to the theme function'),
@@ -205,5 +200,5 @@ function special_topic_nodes_list_content_type_edit_form_submit($form, &$form_st
  * Returns the administrative title for a type.
  */
 function special_topic_nodes_list_content_type_admin_title($subtype, $conf, $context) {
-  return t('"@s" topic nodes list', array('@s' => $context->identifier));
+  return t('Special topic nodes list');
 }

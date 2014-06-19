@@ -50,6 +50,11 @@ function special_topic_schema() {
         'length' => '255',
 		'description' => 'CSS ID add to this node page'
       ),
+	  'positions' => array(
+        'type' => 'text',
+		'description' => 'Topic config positions',
+		'not null' => FALSE,
+      ),
       'pipeline' => array(
         'type' => 'varchar',
         'length' => '255',
@@ -67,4 +72,11 @@ function special_topic_schema() {
  */
 function special_topic_uninstall() {
   db_query("DELETE FROM {node} WHERE type = 'special_topic'");
+}
+
+/*
+ * add positions config field
+ */
+function special_topic_update_7101() {
+  db_add_field('special_topic', 'positions', array('type' => 'text', 'not null' => FALSE, 'description' => 'Topic config positions.'));
 }

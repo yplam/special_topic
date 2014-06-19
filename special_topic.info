@@ -3,4 +3,5 @@ description = Create special topic to archive nodes.
 package = "Panels"
 dependencies[] = panels
 core = 7.x
+version = "7.x-1.1"
 files[] = special_topic.module

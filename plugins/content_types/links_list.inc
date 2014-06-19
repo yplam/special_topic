@@ -37,8 +37,8 @@ function special_topic_links_list_content_type_render($subtype, $conf, $panel_ar
 	  continue;
 	}
 	$links[] = array(
-	  'title' => substr($val, 0, $split_pos),
-	  'href' => substr($val, $split_pos+1),
+	  'title' => trim(substr($val, 0, $split_pos)),
+	  'href' => trim(substr($val, $split_pos+1)),
 	  'attributes' => $attributes,
 	);
   }
