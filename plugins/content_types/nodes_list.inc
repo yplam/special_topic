@@ -200,5 +200,5 @@ function special_topic_nodes_list_content_type_edit_form_submit($form, &$form_st
  * Returns the administrative title for a type.
  */
 function special_topic_nodes_list_content_type_admin_title($subtype, $conf, $context) {
-  return t('Special topic nodes list');
+  return t('Special topic nodes list '.$conf['special_position']);
 }
