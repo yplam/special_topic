@@ -12,14 +12,19 @@ $plugin = array(
 
 function special_topic_nodes_list_render($nodes, $extra){
   $links = array();
+  $readmore = '';
+  if(!empty($extra) && valid_url($extra, TRUE)){
+    // add readmore link
+    $readmore = '<div class="link-wrapper"><a target="_blank" href="'.$extra.'">'.t('Read more').'</div>';
+  }
   foreach($nodes as $node){
     if(empty($node)){
-	  continue;
-	}
+	    continue;
+	  }
     $links[] = array(
-	  'title' => $node->title,
-	  'href' => 'node/'.$node->nid,
-	);
+	    'title' => $node->title,
+	    'href' => 'node/'.$node->nid,
+	  );
   }
-  return theme('links', array('links'=>$links));
+  return theme('links', array('links'=>$links)).$readmore;
 }
