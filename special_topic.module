@@ -194,17 +194,17 @@ function special_topic_field_formatter_view($entity_type, $entity, $field, $inst
   switch ($display['type']) {
     case 'special_topic_simple_link':
       foreach ($items as $delta => $item) {
-	      if(isset($item['special_id']) && $node=node_load($item['special_id'])){
-		      $element[$delta] = array(
+        if(isset($item['special_id']) && $node=node_load($item['special_id'])){
+          $element[$delta] = array(
             '#theme' => 'link',
             '#text' => $node->title,
             '#path' => 'node/'.$node->nid,
-			      '#options' => array(
+            '#options' => array(
               'attributes' => array(),
               'html' => FALSE,
             ),
           );
-		    }
+        }
       }
       break;
   }
@@ -232,7 +232,7 @@ function special_topic_field_widget_form(&$form, &$form_state, $field, $instance
   // for ajax, we need to get data from the chosen special topic
   if(!empty($form_state['triggering_element']['#parents'])){
     $parents = $form_state['triggering_element']['#parents'];
-	  $special_id = (int)$form_state['values'][$parents[0]][$parents[1]][$parents[2]][$parents[3]];
+    $special_id = (int)$form_state['values'][$parents[0]][$parents[1]][$parents[2]][$parents[3]];
   }
 
   $special_position = isset($items[$delta]['special_position']) ? $items[$delta]['special_position'] : '';
@@ -241,35 +241,35 @@ function special_topic_field_widget_form(&$form, &$form_state, $field, $instance
   $topics = special_topic_get_active($special_id);
 
   if(!empty($topics)){
-	  $nids = array_keys($topics);
-	  $nodes = entity_load('node', $nids);
+    $nids = array_keys($topics);
+    $nodes = entity_load('node', $nids);
     foreach($nodes as $item){
       $options[$item->nid] = $item->title;
     }
   }
   $element += array(
-	  '#type' => 'fieldset',
+    '#type' => 'fieldset',
   );
 
   $element['special_id'] = array(
-  	'#type' => 'select',
-  	'#title' => t('Special topic ID'),
-  	'#options' => $options,
-  	'#default_value' => $special_id,
+    '#type' => 'select',
+    '#title' => t('Special topic ID'),
+    '#options' => $options,
+    '#default_value' => $special_id,
     '#description' => t('Select the special topic'),
-	  '#ajax' => array(
+    '#ajax' => array(
       'callback' => 'special_topic_field_widget_form_replace',
       'wrapper' => 'special-position-replace',
     ),
   );
   $special_position_options = special_topic_get_positions($special_id);
   $element['special_position'] = array(
-  	'#type' => 'select',
-  	'#title' => t('Special topic position'),
-  	'#description' => t('Choose the position you want to place you node on the special topic'),
-  	'#default_value' => $special_position,
-  	'#options' => $special_position_options,
-  	'#prefix' => '<div id="special-position-replace">',
+    '#type' => 'select',
+    '#title' => t('Special topic position'),
+    '#description' => t('Choose the position you want to place you node on the special topic'),
+    '#default_value' => $special_position,
+    '#options' => $special_position_options,
+    '#prefix' => '<div id="special-position-replace">',
     '#suffix' => '</div>',
   );
   return $element;
@@ -370,8 +370,8 @@ function special_topic_hook_form(&$node, &$form_state) {
   $form['special_topic']['positions'] = array(
     '#type' => 'textarea',
     '#title' => t('Positions to place topic content'),
-	  '#description' => t('One line each position'),
-	  '#default_value' => empty($node->special_topic['positions']) ? '' : $node->special_topic['positions'],
+    '#description' => t('One line each position'),
+    '#default_value' => empty($node->special_topic['positions']) ? '' : $node->special_topic['positions'],
   );
 
   return $form;
@@ -427,9 +427,9 @@ function special_topic_hook_insert(&$node) {
     ->fields(array(
       'nid' => $node->nid,
       'did' => $display->did,
-	    'css_id' => $node->special_topic['css_id'],
+      'css_id' => $node->special_topic['css_id'],
       'pipeline' => $node->special_topic['pipeline'],
-	    'positions' => $node->special_topic['positions'],
+      'positions' => $node->special_topic['positions'],
     ))
     ->execute();
 }
@@ -451,9 +451,9 @@ function special_topic_hook_update($node) {
   db_update('special_topic')
     ->condition('nid', $node->nid)
     ->fields(array(
-	    'css_id' => $node->special_topic['css_id'],
+      'css_id' => $node->special_topic['css_id'],
       'pipeline' => $node->special_topic['pipeline'],
-	    'positions' => $node->special_topic['positions'],
+      'positions' => $node->special_topic['positions'],
     ))
     ->execute();
 }
@@ -549,7 +549,7 @@ function special_topic_get_positions($nid){
       continue;
     }
     $val = trim($val);
-	  $data[$val] = $val;
+    $data[$val] = $val;
   }
   return $data;
 }

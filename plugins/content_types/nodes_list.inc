@@ -15,12 +15,12 @@ $plugin = array(
     'topic_id' => 0,
     'node_type' => '',
     'is_promoted' => 0,
-  	'count' => 0,
-  	'offset' => 0,
-  	'field_name' => 'field_special_topic',
+    'count' => 0,
+    'offset' => 0,
+    'field_name' => 'field_special_topic',
     'special_position' => '',
-	  'theme_name' => 'special_topic_list',
-	  'extra' => ''
+    'theme_name' => 'special_topic_list',
+    'extra' => ''
   ),
 );
 
@@ -32,14 +32,14 @@ function special_topic_nodes_list_content_type_render($subtype, $conf, $panel_ar
   $nid = (int)$conf['topic_id'];
   // test if this node type has a topic field field_name
   if(!field_info_instance('node', $conf['field_name'], $conf['node_type'])) {
-	  return FALSE;
+    return FALSE;
   }
 
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', $conf['node_type'])
     ->fieldCondition($conf['field_name'], 'special_id', $nid, '=')
-	  ->propertyCondition('status', 1);
+    ->propertyCondition('status', 1);
   $conf['is_promoted'] && $query->propertyCondition('promoted', 1);
   $conf['special_position'] && $query->fieldCondition($conf['field_name'], 'special_position', $conf['special_position'], '=');
   $conf['is_promoted'] && $query->propertyCondition('promoted', 1);
@@ -55,12 +55,12 @@ function special_topic_nodes_list_content_type_render($subtype, $conf, $panel_ar
   }
   // if $count == 0 && $offset > 0, array_slice
   if($count==0 && $offset>0 ){
-	  $result['node'] = array_slice($result['node'], $offset);
+    $result['node'] = array_slice($result['node'], $offset);
   }
 
   $nodes = array();
   foreach($result['node'] as $val){
-	  $nodes[] = node_load($val->nid);
+    $nodes[] = node_load($val->nid);
   }
   $render_types = special_topic_get_render_types();
   $content = '';
@@ -88,20 +88,20 @@ function special_topic_nodes_list_content_type_edit_form($form, &$form_state) {
   $nodes = special_topic_get_active();
   $default_topic_id = $conf['topic_id'];
   if(!empty($nodes)){
-	  $nids = array_keys($nodes);
-	  $nodes = entity_load('node', $nids);
+    $nids = array_keys($nodes);
+    $nodes = entity_load('node', $nids);
     foreach($nodes as $item) {
       $options[$item->nid] = $item->title;
-	    empty($default_topic_id) && $default_topic_id = $item->nid;
+      empty($default_topic_id) && $default_topic_id = $item->nid;
     }
   }
   $form['topic_id'] = array(
     '#title' => t('Choose Special Topic'),
     '#type' => 'select',
     '#default_value' => $conf['topic_id'],
-	  '#options' => $options,
-	  '#required' => TRUE,
-	  '#ajax' => array(
+    '#options' => $options,
+    '#required' => TRUE,
+    '#ajax' => array(
       'path' => 'specialtopic/ajax/nodeslist',
       'wrapper' => 'special-position-replace',
     ),
@@ -117,8 +117,8 @@ function special_topic_nodes_list_content_type_edit_form($form, &$form_state) {
     '#title' => t('The node type'),
     '#type' => 'select',
     '#default_value' => $conf['node_type'],
-	  '#options' => $node_types_option,
-	  '#required' => TRUE,
+    '#options' => $node_types_option,
+    '#required' => TRUE,
   );
   $form['is_promoted'] = array(
     '#title' => t('Only select promoted nodes'),
@@ -128,16 +128,16 @@ function special_topic_nodes_list_content_type_edit_form($form, &$form_state) {
   $form['count'] = array(
     '#title' => t('Limit node count, 0 for no limit'),
     '#type' => 'textfield',
-	  '#size' => 4,
+    '#size' => 4,
     '#default_value' => $conf['count'],
-	  '#required' => TRUE,
+    '#required' => TRUE,
   );
   $form['offset'] = array(
     '#title' => t('Query offset'),
     '#type' => 'textfield',
-	  '#size' => 4,
+    '#size' => 4,
     '#default_value' => $conf['offset'],
-	  '#required' => TRUE,
+    '#required' => TRUE,
   );
 
   // field option
@@ -145,15 +145,15 @@ function special_topic_nodes_list_content_type_edit_form($form, &$form_state) {
   $field_types_option = array();
   foreach($field_types as $key => $val) {
     if($val['type'] == 'field_special_topic'){
-	    $field_types_option[$key] = $key . ' : ' . implode(',', $val['bundles']['node']);
-	  }
+      $field_types_option[$key] = $key . ' : ' . implode(',', $val['bundles']['node']);
+    }
   }
   $form['field_name'] = array(
     '#title' => t('The name of node field'),
     '#type' => 'select',
     '#default_value' => $conf['field_name'],
-	  '#options' => $field_types_option,
-	  '#required' => TRUE,
+    '#options' => $field_types_option,
+    '#required' => TRUE,
   );
 
   $render_types = special_topic_get_render_types();
@@ -165,16 +165,16 @@ function special_topic_nodes_list_content_type_edit_form($form, &$form_state) {
     '#title' => t('Theme name to render the nodes'),
     '#type' => 'select',
     '#default_value' => $conf['theme_name'],
-	  '#options' => $render_types_option,
-	  '#required' => TRUE,
+    '#options' => $render_types_option,
+    '#required' => TRUE,
   );
   $form['special_position'] = array(
     '#title' => t('The name of this position to filter nodes'),
-	  '#description' => t('If left empty, this will load all nodes of this special topic'),
+    '#description' => t('If left empty, this will load all nodes of this special topic'),
     '#type' => 'select',
     '#default_value' => $conf['special_position'],
-	  '#options' => array(''=>'All') + special_topic_get_positions($default_topic_id),
-	  '#validated' => TRUE
+    '#options' => array(''=>'All') + special_topic_get_positions($default_topic_id),
+    '#validated' => TRUE
   );
   $form['extra'] = array(
     '#title' => t('Extra string pass to the theme function'),

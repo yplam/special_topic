@@ -19,12 +19,12 @@ function special_topic_nodes_list_render($nodes, $extra){
   }
   foreach($nodes as $node){
     if(empty($node)){
-	    continue;
-	  }
+      continue;
+    }
     $links[] = array(
-	    'title' => $node->title,
-	    'href' => 'node/'.$node->nid,
-	  );
+      'title' => $node->title,
+      'href' => 'node/'.$node->nid,
+    );
   }
   return theme('links', array('links'=>$links)).$readmore;
 }

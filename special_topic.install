@@ -12,11 +12,11 @@ function special_topic_field_schema($field) {
       'not null' => TRUE,
     ),
     'special_position' => array(
-  	  'description' => 'The position of that node.',
-  	  'type' => 'varchar',
-  	  'length' => 16,
-  	  'not null' => FALSE
-  	),
+      'description' => 'The position of that node.',
+      'type' => 'varchar',
+      'length' => 16,
+      'not null' => FALSE
+    ),
   );
   $indexes = array(
     'special_id_position' => array('special_id', 'special_position'),
@@ -43,22 +43,22 @@ function special_topic_schema() {
       'did' => array(
         'type' => 'int',
         'not null' => TRUE,
-		    'description' => 'Panel display id',
+        'description' => 'Panel display id',
       ),
-	    'css_id' => array(
+      'css_id' => array(
         'type' => 'varchar',
         'length' => '255',
-		    'description' => 'CSS ID add to this node page'
+        'description' => 'CSS ID add to this node page'
       ),
-	    'positions' => array(
+      'positions' => array(
         'type' => 'text',
-    		'description' => 'Topic config positions',
-    		'not null' => FALSE,
+        'description' => 'Topic config positions',
+        'not null' => FALSE,
       ),
       'pipeline' => array(
         'type' => 'varchar',
         'length' => '255',
-		    'Panel pipeline',
+        'Panel pipeline',
       ),
     ),
     'primary key' => array('did'),
