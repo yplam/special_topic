@@ -1,10 +1,11 @@
 <?php
 /**
  * @file
- * Special Topic.
+ * Special Topic Module.
+ * by yplam@yplam.com
  */
 
- 
+
  /***************************************************************
  * Drupal General hooks
  ***************************************************************/
@@ -45,7 +46,7 @@ function special_topic_permission() {
  * Implementation of hook_menu().
  */
 function special_topic_menu() {
-  // Safety: go away if CTools is not at an appropriate version.
+  // Safety: check ctools version
   if (!defined('PANELS_REQUIRED_CTOOLS_API') || !module_invoke('ctools', 'api_version', PANELS_REQUIRED_CTOOLS_API)) {
     return array();
   }
@@ -76,11 +77,12 @@ function special_topic_menu() {
     'page callback' => 'special_topic_add',
     'type' => MENU_CALLBACK,
   );
-  
+
   $items['specialtopic/ajax/nodeslist'] = array(
     'title' => 'Choose Topic Position',
     'access callback' => TRUE,
     'page callback' => 'special_topic_ajax_nodes_list',
+    'type' => MENU_CALLBACK,
   );
 
   return $items;
@@ -103,23 +105,18 @@ function special_topic_node_access($node, $op, $account) {
   if ($op == 'create' && $node != 'special_topic') {
     return NODE_ACCESS_IGNORE;
   }
-
   if (is_object($node) && $node->type != 'special_topic') {
     return NODE_ACCESS_IGNORE;
   }
-
   if (user_access('administer special-topic', $account)) {
     return NODE_ACCESS_ALLOW;
   }
-
   if ($op == 'create' && user_access('create special-topic', $account)) {
     return NODE_ACCESS_ALLOW;
   }
-
   if ($op == 'update' && (user_access('edit any special-topic', $account) || $node->uid == $account->uid && user_access('edit own special-topic', $account))) {
     return NODE_ACCESS_ALLOW;
   }
-
   if ($op == 'delete' && (user_access('delete any special-topic') || $node->uid == $account->uid && user_access('delete own special-topic'))) {
     return NODE_ACCESS_ALLOW;
   }
@@ -135,7 +132,8 @@ function special_topic_ctools_plugin_directory($module, $plugin) {
 }
 
 /**
- * Implements hook_ctools_plugin_type() to inform CTools about the topic render plugin.
+ * Implementation of hook_ctools_plugin_type()
+ * Provide topic_render plugin type
  */
 function special_topic_ctools_plugin_type() {
   $plugins['topic_render'] = array(
@@ -144,15 +142,12 @@ function special_topic_ctools_plugin_type() {
   return $plugins;
 }
 
-function special_topic_get_render_types() {
-  ctools_include('plugins');
-  return ctools_get_plugins('special_topic', 'topic_render');
-}
-
 
 
 /***************************************************************
  * Field Type API hooks
+ * Provide field_special_topic
+ * Attach node to a special topic
  ***************************************************************/
 
 /**
@@ -199,19 +194,17 @@ function special_topic_field_formatter_view($entity_type, $entity, $field, $inst
   switch ($display['type']) {
     case 'special_topic_simple_link':
       foreach ($items as $delta => $item) {
-	    if($item['special_id'] && $node=node_load($item['special_id'])){
-		  $element[$delta] = array(
+	      if(isset($item['special_id']) && $node=node_load($item['special_id'])){
+		      $element[$delta] = array(
             '#theme' => 'link',
             '#text' => $node->title,
             '#path' => 'node/'.$node->nid,
-			'#options' => array(
+			      '#options' => array(
               'attributes' => array(),
-              //REQUIRED:
               'html' => FALSE,
             ),
           );
-		}
-        
+		    }
       }
       break;
   }
@@ -236,59 +229,65 @@ function special_topic_field_widget_info() {
  */
 function special_topic_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   $special_id = isset($items[$delta]['special_id']) ? $items[$delta]['special_id'] : 0;
+  // for ajax, we need to get data from the chosen special topic
   if(!empty($form_state['triggering_element']['#parents'])){
     $parents = $form_state['triggering_element']['#parents'];
-	$special_id = $form_state['values'][$parents[0]][$parents[1]][$parents[2]][$parents[3]];
+	  $special_id = (int)$form_state['values'][$parents[0]][$parents[1]][$parents[2]][$parents[3]];
   }
 
   $special_position = isset($items[$delta]['special_position']) ? $items[$delta]['special_position'] : '';
   $options = array();
   $options[0] = t('None');
   $topics = special_topic_get_active($special_id);
-  
+
   if(!empty($topics)){
-	$nids = array_keys($topics);
-	$nodes = entity_load('node', $nids);
+	  $nids = array_keys($topics);
+	  $nodes = entity_load('node', $nids);
     foreach($nodes as $item){
       $options[$item->nid] = $item->title;
     }
   }
   $element += array(
-	'#type' => 'fieldset',
+	  '#type' => 'fieldset',
   );
+
   $element['special_id'] = array(
-	'#type' => 'select',
-	'#title' => t('Special topic ID'),
-	'#options' => $options,
-	'#default_value' => $special_id,
+  	'#type' => 'select',
+  	'#title' => t('Special topic ID'),
+  	'#options' => $options,
+  	'#default_value' => $special_id,
     '#description' => t('Select the special topic'),
-	'#ajax' => array(
+	  '#ajax' => array(
       'callback' => 'special_topic_field_widget_form_replace',
       'wrapper' => 'special-position-replace',
     ),
   );
-  $special_position_options = empty($form_state['values']['special_id']) ? special_topic_get_positions($special_id) : special_topic_get_positions($form_state['values']['special_id']);
+  $special_position_options = special_topic_get_positions($special_id);
   $element['special_position'] = array(
-	'#type' => 'select',
-	'#title' => t('Special topic position'),
-	'#description' => t('Enter the position you want to place you node on the special topic'),
-	'#default_value' => '',
-	'#options' => $special_position_options,
-	'#prefix' => '<div id="special-position-replace">',
+  	'#type' => 'select',
+  	'#title' => t('Special topic position'),
+  	'#description' => t('Choose the position you want to place you node on the special topic'),
+  	'#default_value' => $special_position,
+  	'#options' => $special_position_options,
+  	'#prefix' => '<div id="special-position-replace">',
     '#suffix' => '</div>',
   );
   return $element;
 }
 
+/**
+ * form ajax callback, special_id change
+ */
 function special_topic_field_widget_form_replace($form, $form_state) {
   $parents = $form_state['triggering_element']['#parents'];
   return $form[$parents[0]][$parents[1]][$parents[2]]['special_position'];
 }
 
+
 /***************************************************************
  * Node Type API hooks
  ***************************************************************/
- 
+
  /**
  * Implements hook_node_info().
  */
@@ -297,12 +296,12 @@ function special_topic_node_info() {
   if (!defined('PANELS_REQUIRED_CTOOLS_API') || !module_invoke('ctools', 'api_version', PANELS_REQUIRED_CTOOLS_API)) {
     return array();
   }
-  
+
   return array(
     'special_topic' => array(
       'name' => t('Special Topic'),
       'base' => 'special_topic_hook',
-      'description' => t('Provide special topic to archive nodes.'),
+      'description' => t('Provide special topic page to archive nodes.'),
       'title_label' => t('Special Topic Title'),
       'locked' => TRUE,
     ),
@@ -318,6 +317,7 @@ function special_topic_hook_form(&$node, &$form_state) {
 
   $form['special_topic']['#tree'] = TRUE;
   if (empty($node->nid) && arg(0) == 'node' && arg(1) == 'add') {
+    // force user to choose layout first
     $panel_layout = isset($node->panel_layout) ? $node->panel_layout : arg(3);
     if (empty($panel_layout)) {
       $opts = $_GET;
@@ -366,12 +366,12 @@ function special_topic_hook_form(&$node, &$form_state) {
     '#title' => t('Renderer'),
     '#default_value' => isset($node->special_topic['pipeline']) ? $node->special_topic['pipeline'] : 'standard',
   );
-  
+
   $form['special_topic']['positions'] = array(
     '#type' => 'textarea',
     '#title' => t('Positions to place topic content'),
-	'#description' => t('One line each position'),
-	'#default_value' => empty($node->special_topic['positions']) ? '' : $node->special_topic['positions'],
+	  '#description' => t('One line each position'),
+	  '#default_value' => empty($node->special_topic['positions']) ? '' : $node->special_topic['positions'],
   );
 
   return $form;
@@ -427,9 +427,9 @@ function special_topic_hook_insert(&$node) {
     ->fields(array(
       'nid' => $node->nid,
       'did' => $display->did,
-	  'css_id' => $node->special_topic['css_id'],
+	    'css_id' => $node->special_topic['css_id'],
       'pipeline' => $node->special_topic['pipeline'],
-	  'positions' => $node->special_topic['positions'],
+	    'positions' => $node->special_topic['positions'],
     ))
     ->execute();
 }
@@ -451,9 +451,9 @@ function special_topic_hook_update($node) {
   db_update('special_topic')
     ->condition('nid', $node->nid)
     ->fields(array(
-	  'css_id' => $node->special_topic['css_id'],
+	    'css_id' => $node->special_topic['css_id'],
       'pipeline' => $node->special_topic['pipeline'],
-	  'positions' => $node->special_topic['positions'],
+	    'positions' => $node->special_topic['positions'],
     ))
     ->execute();
 }
@@ -490,11 +490,14 @@ function special_topic_hook_view($node, $view_mode) {
       );
     }
   }
-
   unset($rendering[$node->nid]);
   return $node;
 }
 
+
+/***************************************************************
+ * General Functions
+ ***************************************************************/
 
 /**
  * Pass through to the panels layout editor.
@@ -530,6 +533,9 @@ function special_topic_get_context(&$node) {
   return array('special-topic' => $context);
 }
 
+/**
+ * Get all positions from a topic
+ */
 function special_topic_get_positions($nid){
   $node = node_load($nid);
   $data = array();
@@ -539,8 +545,11 @@ function special_topic_get_positions($nid){
   $links = explode("\n", $node->special_topic['positions']);
   $curline = 1;
   foreach($links as $val){
+    if(!$val){
+      continue;
+    }
     $val = trim($val);
-	$data[$val] = $val;
+	  $data[$val] = $val;
   }
   return $data;
 }
@@ -571,4 +580,13 @@ function special_topic_get_active(){
     ->propertyCondition('status', 1);
   $result = $query->execute();
   return $result['node'];
+}
+
+
+/**
+ * Get all topic_render plugins
+ */
+function special_topic_get_render_types() {
+  ctools_include('plugins');
+  return ctools_get_plugins('special_topic', 'topic_render');
 }

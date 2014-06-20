@@ -11,8 +11,8 @@ $plugin = array(
   'defaults' => array(
     'theme_name' => '',
     'links' => '',
-	'extra' => '',
-	'newpage' => 0,
+	  'extra' => '',
+	  'newpage' => 0,
   ),
 );
 
@@ -25,7 +25,7 @@ function special_topic_links_list_content_type_render($subtype, $conf, $panel_ar
   }
   $theme = 'links';
   $links = array();
-  
+
   $links_str = explode("\n", $conf['links']);
   $attributes = array();
   if(!empty($conf['newpage'])){
@@ -33,16 +33,16 @@ function special_topic_links_list_content_type_render($subtype, $conf, $panel_ar
   }
   foreach($links_str as $val){
     $split_pos = strrpos($val, "|");
-	if($split_pos === FALSE){
-	  continue;
-	}
-	$links[] = array(
-	  'title' => trim(substr($val, 0, $split_pos)),
-	  'href' => trim(substr($val, $split_pos+1)),
-	  'attributes' => $attributes,
-	);
+	  if($split_pos === FALSE){
+	    continue;
+	  }
+  	$links[] = array(
+  	  'title' => trim(substr($val, 0, $split_pos)),
+  	  'href' => trim(substr($val, $split_pos+1)),
+  	  'attributes' => $attributes,
+  	);
   }
-  
+
   $render_types = special_topic_get_render_types();
   $content = '';
   if( !empty($render_types[$conf['theme_name']]) && function_exists($render_types[$conf['theme_name']]['callback'])){
@@ -66,7 +66,7 @@ function special_topic_links_list_content_type_render($subtype, $conf, $panel_ar
  */
 function special_topic_links_list_content_type_edit_form($form, &$form_state) {
   $conf = $form_state['conf'];
-  
+
   $render_types = special_topic_get_render_types();
   $render_types_option = array();
   $render_types_option[0] = 'Links';
@@ -77,15 +77,15 @@ function special_topic_links_list_content_type_edit_form($form, &$form_state) {
     '#title' => t('Theme name to render the nodes'),
     '#type' => 'select',
     '#default_value' => $conf['theme_name'],
-	'#options' => $render_types_option,
-	'#required' => TRUE,
+  	'#options' => $render_types_option,
+  	'#required' => TRUE,
   );
   $form['links'] = array(
     '#title' => t('Links to display.'),
     '#type' => 'textarea',
-	'#description' => 'Format: text|url. One link each line.',
+	  '#description' => 'Format: text|url. One link each line.',
     '#default_value' => $conf['links'],
-	'#required' => TRUE,
+	  '#required' => TRUE,
   );
   $form['newpage'] = array(
     '#title' => t('Open link in new page'),
@@ -109,14 +109,14 @@ function special_topic_links_list_content_type_edit_form_validate($form, &$form_
   $curline = 1;
   foreach($links as $val){
     $split_pos = strrpos($val, "|");
-	if($split_pos === FALSE){
-	  form_set_error('links', 'No | on line '.$curline);
-	}
-	$url = substr($val, $split_pos+1);
-	if(!valid_url($url, TRUE)){
-	  form_set_error('links', 'Wrong url format on line '.$curline);
-	}
-	$curline ++;
+	  if($split_pos === FALSE){
+	    form_set_error('links', 'No | on line '.$curline);
+	  }
+  	$url = substr($val, $split_pos+1);
+  	if(!valid_url($url, TRUE)){
+  	  form_set_error('links', 'Wrong url format on line '.$curline);
+  	}
+  	$curline ++;
   }
 }
 
