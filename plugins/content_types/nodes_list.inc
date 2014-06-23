@@ -48,6 +48,7 @@ function special_topic_nodes_list_content_type_render($subtype, $conf, $panel_ar
   $count = empty($conf['count']) ? NULL : (int)$conf['count'];
   // use range only when $count > 0
   $count && $query->range($offset, $count);
+  $query->propertyOrderBy('created', 'DESC');
   $result = $query->execute();
 
   if(empty($result['node'])){
