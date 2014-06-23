@@ -228,13 +228,17 @@ function special_topic_field_widget_info() {
  * Implements hook_field_widget_form().
  */
 function special_topic_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
-  $special_id = isset($items[$delta]['special_id']) ? $items[$delta]['special_id'] : 0;
+  $special_id = empty($items[$delta]['special_id']) ? 0 : $items[$delta]['special_id'];
   // for ajax, we need to get data from the chosen special topic
   if(!empty($form_state['triggering_element']['#parents'])){
     $parents = $form_state['triggering_element']['#parents'];
-    $special_id = (int)$form_state['values'][$parents[0]][$parents[1]][$parents[2]][$parents[3]];
+    // only action when special_id is change
+    if(isset($parents[3]) && $parents[3]=='special_id'){
+      $special_id = (int)$form_state['values'][$parents[0]][$parents[1]][$parents[2]][$parents[3]];
+    }
   }
-  $special_position = isset($items[$delta]['special_position']) ? $items[$delta]['special_position'] : '';
+
+  $special_position = empty($items[$delta]['special_position']) ? '' : $items[$delta]['special_position'];
   $options = array();
   $options[0] = t('None');
   $topics = special_topic_get_active($special_id);
