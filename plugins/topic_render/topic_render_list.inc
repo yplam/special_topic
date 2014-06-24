@@ -16,7 +16,7 @@ function special_topic_nodes_list_render($nodes, $extra) {
   $readmore = '';
   if (!empty($extra) && valid_url($extra, TRUE)) {
     // add readmore link
-    $readmore = '<div class="link-wrapper"><a target="_blank" href="' . $extra . '">' . t('Read more') . '</div>';
+    $readmore = '<div class="link-wrapper"><a target="_blank" href="' . $extra . '">' . t('Read more') . '</a></div>';
   }
   foreach ($nodes as $node) {
     if (empty($node)) {
