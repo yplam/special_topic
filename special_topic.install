@@ -1,4 +1,9 @@
 <?php
+/**
+ * @file
+ * Special Topic Module install schema.
+ * by yplam@yplam.com
+ */
 
 /**
  * Implements hook_field_schema().

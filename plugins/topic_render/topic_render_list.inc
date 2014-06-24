@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Plugins are described by creating a $plugin array which will be used
  * by the system that includes this file.
  */
@@ -10,21 +11,21 @@ $plugin = array(
 );
 
 
-function special_topic_nodes_list_render($nodes, $extra){
+function special_topic_nodes_list_render($nodes, $extra) {
   $links = array();
   $readmore = '';
-  if(!empty($extra) && valid_url($extra, TRUE)){
+  if (!empty($extra) && valid_url($extra, TRUE)) {
     // add readmore link
-    $readmore = '<div class="link-wrapper"><a target="_blank" href="'.$extra.'">'.t('Read more').'</div>';
+    $readmore = '<div class="link-wrapper"><a target="_blank" href="' . $extra . '">' . t('Read more') . '</div>';
   }
-  foreach($nodes as $node){
-    if(empty($node)){
+  foreach ($nodes as $node) {
+    if (empty($node)) {
       continue;
     }
     $links[] = array(
       'title' => $node->title,
-      'href' => 'node/'.$node->nid,
+      'href' => 'node/' . $node->nid,
     );
   }
-  return theme('links', array('links'=>$links)).$readmore;
+  return theme('links', array('links' => $links)) . $readmore;
 }

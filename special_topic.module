@@ -126,7 +126,7 @@ function special_topic_node_access($node, $op, $account) {
  * Implementation of hook_ctools_plugin_directory
  */
 function special_topic_ctools_plugin_directory($module, $plugin) {
-  if($module == 'ctools' || $module == 'special_topic'){
+  if ($module == 'ctools' || $module == 'special_topic') {
     return 'plugins/' . $plugin;
   }
 }
@@ -194,11 +194,11 @@ function special_topic_field_formatter_view($entity_type, $entity, $field, $inst
   switch ($display['type']) {
     case 'special_topic_simple_link':
       foreach ($items as $delta => $item) {
-        if(isset($item['special_id']) && $node=node_load($item['special_id'])){
+        if (isset($item['special_id']) && $node=node_load($item['special_id'])) {
           $element[$delta] = array(
             '#theme' => 'link',
             '#text' => $node->title,
-            '#path' => 'node/'.$node->nid,
+            '#path' => 'node/' . $node->nid,
             '#options' => array(
               'attributes' => array(),
               'html' => FALSE,
@@ -230,10 +230,10 @@ function special_topic_field_widget_info() {
 function special_topic_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   $special_id = empty($items[$delta]['special_id']) ? 0 : $items[$delta]['special_id'];
   // for ajax, we need to get data from the chosen special topic
-  if(!empty($form_state['triggering_element']['#parents'])){
+  if (!empty($form_state['triggering_element']['#parents'])) {
     $parents = $form_state['triggering_element']['#parents'];
     // only action when special_id is change
-    if(isset($parents[3]) && $parents[3]=='special_id'){
+    if (isset($parents[3]) && $parents[3]=='special_id') {
       $special_id = (int)$form_state['values'][$parents[0]][$parents[1]][$parents[2]][$parents[3]];
     }
   }
@@ -243,10 +243,10 @@ function special_topic_field_widget_form(&$form, &$form_state, $field, $instance
   $options[0] = t('None');
   $topics = special_topic_get_active($special_id);
 
-  if(!empty($topics)){
+  if (!empty($topics)) {
     $nids = array_keys($topics);
     $nodes = entity_load('node', $nids);
-    foreach($nodes as $item){
+    foreach ($nodes as $item) {
       $options[$item->nid] = $item->title;
     }
   }
@@ -262,7 +262,7 @@ function special_topic_field_widget_form(&$form, &$form_state, $field, $instance
     '#description' => t('Select the special topic'),
     '#ajax' => array(
       'callback' => 'special_topic_field_widget_form_replace',
-      'wrapper' => 'special-position-'.$delta.'-replace',
+      'wrapper' => 'special-position-' . $delta . '-replace',
     ),
   );
   $special_position_options = special_topic_get_positions($special_id);
@@ -272,7 +272,7 @@ function special_topic_field_widget_form(&$form, &$form_state, $field, $instance
     '#description' => t('Choose the position you want to place you node on the special topic'),
     '#default_value' => $special_position,
     '#options' => $special_position_options,
-    '#prefix' => '<div id="special-position-'.$delta.'-replace">',
+    '#prefix' => '<div id="special-position-' . $delta . '-replace">',
     '#suffix' => '</div>',
     '#validated' => TRUE
   );
@@ -540,16 +540,16 @@ function special_topic_get_context(&$node) {
 /**
  * Get all positions from a topic
  */
-function special_topic_get_positions($nid){
+function special_topic_get_positions($nid) {
   $node = node_load($nid);
   $data = array();
-  if(empty($node->special_topic['positions'])){
+  if (empty($node->special_topic['positions'])) {
     return $data;
   }
   $links = explode("\n", $node->special_topic['positions']);
   $curline = 1;
-  foreach($links as $val){
-    if(!$val){
+  foreach ($links as $val) {
+    if (!$val) {
       continue;
     }
     $val = trim($val);
@@ -562,7 +562,7 @@ function special_topic_get_positions($nid){
  * the option string of a special topic position field
  * return ajax content
  */
-function special_topic_ajax_nodes_list(){
+function special_topic_ajax_nodes_list() {
   $data = special_topic_get_positions((int)$_POST['topic_id']);
   $options .= '<option value="">All</option>';
   foreach ($data as $key => $value) {
@@ -577,7 +577,7 @@ function special_topic_ajax_nodes_list(){
  * Get the nids of all active special topics
  * todo: add filter options
  */
-function special_topic_get_active(){
+function special_topic_get_active() {
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'special_topic')

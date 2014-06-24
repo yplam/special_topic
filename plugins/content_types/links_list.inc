@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Render Links on a Special Topic Page
  */
 $plugin = array(
@@ -20,7 +21,7 @@ $plugin = array(
  * Select node list and render with a theme.
  */
 function special_topic_links_list_content_type_render($subtype, $conf, $panel_args, $context) {
-  if(empty($conf['links'])){
+  if (empty($conf['links'])) {
     return FALSE;
   }
   $theme = 'links';
@@ -28,12 +29,12 @@ function special_topic_links_list_content_type_render($subtype, $conf, $panel_ar
 
   $links_str = explode("\n", $conf['links']);
   $attributes = array();
-  if(!empty($conf['newpage'])){
+  if (!empty($conf['newpage'])) {
     $attributes['target'] = '_blank';
   }
-  foreach($links_str as $val){
+  foreach ($links_str as $val) {
     $split_pos = strrpos($val, "|");
-    if($split_pos === FALSE){
+    if ($split_pos === FALSE) {
       continue;
     }
     $links[] = array(
@@ -45,12 +46,12 @@ function special_topic_links_list_content_type_render($subtype, $conf, $panel_ar
 
   $render_types = special_topic_get_render_types();
   $content = '';
-  if( !empty($render_types[$conf['theme_name']]) && function_exists($render_types[$conf['theme_name']]['callback'])){
+  if ( !empty($render_types[$conf['theme_name']]) && function_exists($render_types[$conf['theme_name']]['callback'])) {
     $function_name = $render_types[$conf['theme_name']]['callback'];
     $content = $function_name($links, $conf['extra']);
   }
-  else{
-    $content = theme('links', array('links'=>$links));
+  else {
+    $content = theme('links', array('links' => $links));
   }
   // Build the content type block.
   $block = new stdClass();
@@ -70,7 +71,7 @@ function special_topic_links_list_content_type_edit_form($form, &$form_state) {
   $render_types = special_topic_get_render_types();
   $render_types_option = array();
   $render_types_option[0] = 'Links';
-  foreach($render_types as $key=>$val){
+  foreach ($render_types as $key => $val) {
     $render_types_option[$key] = $val['title'];
   }
   $form['theme_name'] = array(
@@ -107,14 +108,14 @@ function special_topic_links_list_content_type_edit_form($form, &$form_state) {
 function special_topic_links_list_content_type_edit_form_validate($form, &$form_state) {
   $links = explode("\n", $form_state['values']['links']);
   $curline = 1;
-  foreach($links as $val){
+  foreach ($links as $val) {
     $split_pos = strrpos($val, "|");
-    if($split_pos === FALSE){
-      form_set_error('links', 'No | on line '.$curline);
+    if ($split_pos === FALSE) {
+      form_set_error('links', 'No | on line ' . $curline);
     }
     $url = substr($val, $split_pos+1);
-    if(!valid_url($url, TRUE)){
-      form_set_error('links', 'Wrong url format on line '.$curline);
+    if (!valid_url($url, TRUE)) {
+      form_set_error('links', 'Wrong url format on line ' . $curline);
     }
     $curline ++;
   }
