@@ -12,3 +12,5 @@ Drupal Special Topic模块提供一种通用并且可定制的Drupal专题页面
 同时，模块提供了topic_render插件类型，用户可以通过实现此插件为Special Topic相关的content_types提供theme功能，用不同的形式展现内容。
 
 模块依赖于ctools与panel。
+
+Demo页面 http://yplam.com/drupal
